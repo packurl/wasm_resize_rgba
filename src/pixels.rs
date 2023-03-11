@@ -203,15 +203,3 @@ impl<C: PixelComponent> IntoPixelComponent<C> for C {
         self
     }
 }
-
-impl IntoPixelComponent<u8> for u16 {
-    fn into_component(self) -> u8 {
-        self.to_le_bytes()[1]
-    }
-}
-
-impl IntoPixelComponent<u16> for u8 {
-    fn into_component(self) -> u16 {
-        u16::from_le_bytes([self, self])
-    }
-}

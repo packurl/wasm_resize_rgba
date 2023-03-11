@@ -14,10 +14,6 @@ pub(crate) fn vert_convolution_u8<T: PixelExt<Component = u8>>(
     coeffs: Coefficients,
     cpu_extensions: CpuExtensions,
 ) {
-    // Check safety conditions
-    debug_assert!(src_image.width().get() - offset >= dst_image.width().get());
-    debug_assert_eq!(coeffs.bounds.len(), dst_image.height().get() as usize);
-
     match cpu_extensions {
         #[cfg(target_arch = "wasm32")]
         CpuExtensions::Simd128 => wasm32::vert_convolution(src_image, dst_image, offset, coeffs),

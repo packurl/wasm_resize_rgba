@@ -19,9 +19,9 @@ pub(crate) fn horiz_convolution(
     let normalizer = optimisations::Normalizer16::new(coeffs);
     let precision = normalizer.precision();
     let coefficients_chunks = normalizer.normalized_chunks();
-    let dst_height = dst_image.height().get();
+    let dst_height = dst_image.height();
 
-    let src_iter = src_image.iter_4_rows(offset, dst_height + offset);
+    let src_iter = src_image.iter_4_rows(offset, dst_height as u32 + offset);
     let dst_iter = dst_image.iter_4_rows_mut();
     for (src_rows, dst_rows) in src_iter.zip(dst_iter) {
         unsafe {
@@ -33,7 +33,7 @@ pub(crate) fn horiz_convolution(
     while yy < dst_height {
         unsafe {
             horiz_convolution_8u(
-                src_image.get_row(yy + offset).unwrap(),
+                src_image.get_row(yy + offset as usize).unwrap(),
                 dst_image.get_row_mut(yy).unwrap(),
                 &coefficients_chunks,
                 precision,

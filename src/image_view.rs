@@ -1,20 +1,9 @@
 use std::fmt::Debug;
 use std::mem::ManuallyDrop;
-use std::num::NonZeroU32;
 use std::slice;
 
 use crate::pixels::PixelExt;
-use crate::{DifferentDimensionsError, ImageBufferError};
-
-/// Parameters of crop box that may be used with [`ImageView`]
-/// and [`DynamicImageView`](crate::DynamicImageView)
-#[derive(Debug, Clone, Copy)]
-pub struct CropBox {
-    pub left: u32,
-    pub top: u32,
-    pub width: NonZeroU32,
-    pub height: NonZeroU32,
-}
+use crate::ImageBufferError;
 
 /// Generic immutable image view.
 #[derive(Debug, Clone)]
@@ -22,9 +11,8 @@ pub struct ImageView<'a, P>
 where
     P: PixelExt,
 {
-    width: NonZeroU32,
-    height: NonZeroU32,
-    crop_box: CropBox,
+    width: usize,
+    height: usize,
     rows: Vec<&'a [P]>,
 }
 
@@ -34,43 +22,33 @@ where
 {
 
     pub fn from_buffer(
-        width: NonZeroU32,
-        height: NonZeroU32,
+        width: usize,
+        height: usize,
         buffer: &'a [u8],
     ) -> Result<Self, ImageBufferError> {
-        let size = (width.get() * height.get()) as usize * P::size();
+        let size = (width * height) * P::size();
         if buffer.len() < size {
             return Err(ImageBufferError::InvalidBufferSize);
         }
-        let rows_count = height.get() as usize;
+        let rows_count = height;
         let pixels = align_buffer_to(buffer)?;
         let rows = pixels
-            .chunks_exact(width.get() as usize)
+            .chunks_exact(width)
             .take(rows_count)
             .collect();
         Ok(Self {
             width,
             height,
-            crop_box: CropBox {
-                left: 0,
-                top: 0,
-                width,
-                height,
-            },
             rows,
         })
     }
 
-    pub fn width(&self) -> NonZeroU32 {
+    pub fn width(&self) -> usize {
         self.width
     }
 
-    pub fn height(&self) -> NonZeroU32 {
+    pub fn height(&self) -> usize {
         self.height
-    }
-
-    pub fn crop_box(&self) -> CropBox {
-        self.crop_box
     }
 
     #[inline(always)]
@@ -80,7 +58,7 @@ where
         max_y: u32,
     ) -> impl Iterator<Item = [&'a [P]; 4]> + 's {
         let start_y = start_y as usize;
-        let max_y = max_y.min(self.height.get()) as usize;
+        let max_y = (max_y as usize).min(self.height());
         let rows = self.rows.get(start_y..max_y).unwrap_or(&[]);
         rows.chunks_exact(4).map(|rows| match *rows {
             [r0, r1, r2, r3] => [r0, r1, r2, r3],
@@ -95,7 +73,7 @@ where
         max_y: u32,
     ) -> impl Iterator<Item = [&'a [P]; 2]> + 's {
         let start_y = start_y as usize;
-        let max_y = max_y.min(self.height.get()) as usize;
+        let max_y = (max_y as usize).min(self.height);
         let rows = self.rows.get(start_y..max_y).unwrap_or(&[]);
         rows.chunks_exact(2).map(|rows| match *rows {
             [r0, r1] => [r0, r1],
@@ -111,22 +89,8 @@ where
     }
 
     #[inline(always)]
-    pub(crate) fn get_row(&self, y: u32) -> Option<&'a [P]> {
-        self.rows.get(y as usize).copied()
-    }
-
-
-    #[inline(always)]
-    pub(crate) fn iter_cropped_rows<'s>(&'s self) -> impl Iterator<Item = &'a [P]> + 's {
-        let first_row = self.crop_box.top as usize;
-        let last_row = first_row + self.crop_box.height.get() as usize;
-        let rows = unsafe { self.rows.get_unchecked(first_row..last_row) };
-
-        let first_col = self.crop_box.left as usize;
-        let last_col = first_col + self.crop_box.width.get() as usize;
-        rows.iter()
-            // Safety guaranteed by method 'set_crop_box'
-            .map(move |row| unsafe { row.get_unchecked(first_col..last_col) })
+    pub(crate) fn get_row(&self, y: usize) -> Option<&'a [P]> {
+        self.rows.get(y).copied()
     }
 }
 
@@ -136,8 +100,8 @@ pub struct ImageViewMut<'a, P>
 where
     P: PixelExt,
 {
-    width: NonZeroU32,
-    height: NonZeroU32,
+    width: usize,
+    height: usize,
     rows: Vec<&'a mut [P]>,
 }
 
@@ -147,18 +111,18 @@ where
 {
 
     pub fn from_buffer(
-        width: NonZeroU32,
-        height: NonZeroU32,
+        width: usize,
+        height: usize,
         buffer: &'a mut [u8],
     ) -> Result<Self, ImageBufferError> {
-        let size = (width.get() * height.get()) as usize * P::size();
+        let size = width * height * P::size();
         if buffer.len() < size {
             return Err(ImageBufferError::InvalidBufferSize);
         }
-        let rows_count = height.get() as usize;
+        let rows_count = height;
         let pixels = align_buffer_to_mut(buffer)?;
         let rows = pixels
-            .chunks_exact_mut(width.get() as usize)
+            .chunks_exact_mut(width)
             .take(rows_count)
             .collect();
         Ok(Self {
@@ -169,17 +133,17 @@ where
     }
 
     pub fn from_pixels(
-        width: NonZeroU32,
-        height: NonZeroU32,
+        width: usize,
+        height: usize,
         pixels: &'a mut [P],
     ) -> Result<Self, ImageBufferError> {
-        let size = (width.get() * height.get()) as usize;
+        let size = width * height;
         if pixels.len() < size {
             return Err(ImageBufferError::InvalidBufferSize);
         }
-        let rows_count = height.get() as usize;
+        let rows_count = height;
         let rows = pixels
-            .chunks_exact_mut(width.get() as usize)
+            .chunks_exact_mut(width)
             .take(rows_count)
             .collect();
         Ok(Self {
@@ -189,11 +153,11 @@ where
         })
     }
 
-    pub fn width(&self) -> NonZeroU32 {
+    pub fn width(&self) -> usize {
         self.width
     }
 
-    pub fn height(&self) -> NonZeroU32 {
+    pub fn height(&self) -> usize {
         self.height
     }
 
@@ -213,25 +177,10 @@ where
     }
 
     #[inline(always)]
-    pub(crate) fn get_row_mut<'s>(&'s mut self, y: u32) -> Option<&'s mut &'a mut [P]> {
-        self.rows.get_mut(y as usize)
+    pub(crate) fn get_row_mut<'s>(&'s mut self, y: usize) -> Option<&'s mut &'a mut [P]> {
+        self.rows.get_mut(y)
     }
 
-    /// Copy pixels from src_view.
-    pub(crate) fn copy_from_view(
-        &mut self,
-        src_view: &ImageView<P>,
-    ) -> Result<(), DifferentDimensionsError> {
-        let src_crop_box = src_view.crop_box();
-        if self.width != src_crop_box.width || self.height != src_crop_box.height {
-            return Err(DifferentDimensionsError);
-        }
-        self.rows
-            .iter_mut()
-            .zip(src_view.iter_cropped_rows())
-            .for_each(|(d, s)| d.copy_from_slice(s));
-        Ok(())
-    }
 }
 
 impl<'a, P> From<ImageViewMut<'a, P>> for ImageView<'a, P>
@@ -248,12 +197,6 @@ where
         ImageView {
             width: view.width,
             height: view.height,
-            crop_box: CropBox {
-                left: 0,
-                top: 0,
-                width: view.width,
-                height: view.height,
-            },
             rows,
         }
     }

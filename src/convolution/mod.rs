@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 pub use filters::{get_filter_func, FilterType};
 
 use crate::pixels::PixelExt;
@@ -55,16 +53,13 @@ pub struct CoefficientsChunk<'a> {
 }
 
 pub fn precompute_coefficients(
-    in_size: NonZeroU32,
+    in_size: usize,
     in0: f64, // Left border for cropping
     in1: f64, // Right border for cropping
-    out_size: NonZeroU32,
+    out_size: usize,
     filter: &dyn Fn(f64) -> f64,
     filter_support: f64,
 ) -> Coefficients {
-    let in_size = in_size.get();
-    let out_size = out_size.get();
-
     let scale = (in1 - in0) / out_size as f64;
     let filter_scale = scale.max(1.0);
 

@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 use crate::convolution::{self, Convolution, FilterType};
 use crate::image::InnerImage;
 use crate::pixels::PixelExt;
@@ -82,12 +80,6 @@ impl Resizer {
     where
         P: Convolution,
     {
-        if dst_image.copy_from_view(src_image).is_ok() {
-            // If `copy_from_view()` has returned `Ok` then
-            // the size of the destination image is equal to
-            // the size of the cropped source image.
-            return;
-        }
         match self.algorithm {
             ResizeAlg::Convolution(filter_type) => {
                 let convolution_buffer = &mut self.convolution_buffer;
@@ -107,10 +99,10 @@ impl Resizer {
 /// Buffer may be expanded if it size is less than required for image.
 fn get_temp_image_from_buffer<P: PixelExt>(
     buffer: &mut Vec<u8>,
-    width: NonZeroU32,
-    height: NonZeroU32,
+    width: usize,
+    height: usize,
 ) -> InnerImage<P> {
-    let pixels_count = (width.get() * height.get()) as usize;
+    let pixels_count = width * height;
     // Add pixel size as gap for alignment of resulted buffer.
     let buf_size = pixels_count * P::size() + P::size();
     if buffer.len() < buf_size {
@@ -129,29 +121,30 @@ fn resample_convolution<P>(
 ) where
     P: Convolution,
 {
-    let crop_box = src_image.crop_box();
+    let src_width = src_image.width();
+    let src_height = src_image.height();
     let dst_width = dst_image.width();
     let dst_height = dst_image.height();
     let (filter_fn, filter_support) = convolution::get_filter_func(filter_type);
 
-    let need_horizontal = dst_width != crop_box.width;
+    let need_horizontal = dst_width != src_width;
     let horiz_coeffs = need_horizontal.then(|| {
         convolution::precompute_coefficients(
-            src_image.width(),
-            crop_box.left as f64,
-            crop_box.left as f64 + crop_box.width.get() as f64,
+            src_width,
+            0.0,
+            src_width as f64,
             dst_width,
             filter_fn,
             filter_support,
         )
     });
 
-    let need_vertical = dst_height != crop_box.height;
+    let need_vertical = dst_height != src_height;
     let vert_coeffs = need_vertical.then(|| {
         convolution::precompute_coefficients(
             src_image.height(),
-            crop_box.top as f64,
-            crop_box.top as f64 + crop_box.height.get() as f64,
+            0.0,
+            src_height as f64,
             dst_height,
             filter_fn,
             filter_support,
@@ -164,8 +157,8 @@ fn resample_convolution<P>(
             // Last used row in the source image
             let last_y_bound = vert_coeffs.bounds.last().unwrap();
             let y_last = last_y_bound.start + last_y_bound.size;
-            let temp_height = NonZeroU32::new(y_last - y_first).unwrap();
-            let mut temp_image = get_temp_image_from_buffer(temp_buffer, dst_width, temp_height);
+            let temp_height = y_last - y_first;
+            let mut temp_image = get_temp_image_from_buffer(temp_buffer, dst_width, temp_height as usize);
             let mut tmp_dst_view = temp_image.dst_view();
             P::horiz_convolution(
                 src_image,
@@ -192,7 +185,7 @@ fn resample_convolution<P>(
             P::horiz_convolution(
                 src_image,
                 dst_image,
-                crop_box.top,
+                0,
                 horiz_coeffs,
                 cpu_extensions,
             );
@@ -201,7 +194,7 @@ fn resample_convolution<P>(
             P::vert_convolution(
                 src_image,
                 dst_image,
-                crop_box.left,
+                0,
                 vert_coeffs,
                 cpu_extensions,
             );

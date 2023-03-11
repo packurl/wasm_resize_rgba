@@ -107,7 +107,7 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
         }
 
         if let Some(&k) = coeffs.get(y as usize) {
-            let s_row = src_img.get_row(y_start + y).unwrap();
+            let s_row = src_img.get_row((y_start + y) as usize).unwrap();
             let components = T::components(s_row);
             let mmk = i32x4_splat(k as i32);
 
@@ -201,7 +201,7 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
         }
 
         if let Some(&k) = coeffs.get(y as usize) {
-            let s_row = src_img.get_row(y_start + y).unwrap();
+            let s_row = src_img.get_row((y_start + y) as usize).unwrap();
             let components = T::components(s_row);
             let mmk = i32x4_splat(k as i32);
 
@@ -257,7 +257,7 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
         }
 
         if let Some(&k) = coeffs.get(y as usize) {
-            let s_row = src_img.get_row(y_start + y).unwrap();
+            let s_row = src_img.get_row((y_start + y) as usize).unwrap();
             let components = T::components(s_row);
             let pix = wasm32_utils::i32x4_extend_low_ptr_u8(components, src_x);
             let mmk = i32x4_splat(k as i32);
