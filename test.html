@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:#222;color:#eee;font:12pt monospace;height:100%}
+body{min-height:100%;display:flex;flex-wrap:wrap;align-items:start;gap:1em;padding:1em}
+</style>
+</head>
+<body>
+<script type="module">
+const image=new Image();
+await new Promise((r)=>{
+  image.onload=r;
+  image.src='bee.jpg';
+});
+const canvas=new OffscreenCanvas(1,1);
+canvas.width=image.width;
+canvas.height=image.height;
+const context=canvas.getContext('2d');
+context.drawImage(image,0,0);
+const data=context.getImageData(0,0,canvas.width,canvas.height);
+// const tmp=new Blob([data.data],{type:'application/octet-stream'});
+// const a=document.createElement('a');
+// a.download='data.bin';
+// a.href=URL.createObjectURL(tmp);
+// a.textContent='Download';
+// document.body.appendChild(a);
+const rgba=new Uint8Array(data.data);
+const {resize}=await import('./resize.mjs');
+const r=Math.min(1,1440/Math.min(data.width,data.height));
+const w=Math.round(data.width*r);
+const h=Math.round(data.height*r);
+console.log(`Resizing from ${data.width},${data.height} to ${w},${h} (ratio: ${r.toFixed(3)})`);
+const bytes=await resize(rgba,data.width,data.height,w,h);
+const data2=new ImageData(new Uint8ClampedArray(bytes),w,h,{colorSpace: 'srgb'});
+canvas.width=w;
+canvas.height=h;
+context.putImageData(data2,0,0);
+const img=document.createElement('img');
+img.src=URL.createObjectURL(await canvas.convertToBlob());
+document.body.appendChild(img);
+</script>
+</body>
+</html>

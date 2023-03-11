@@ -1,0 +1,22 @@
+[package]
+name = "rgba_resize"
+version = "0.1.0"
+authors = ["programingjd"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib","rlib"]
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+
+[dependencies.num-traits]
+version = "0.2"
+#[dependencies.fast_image_resize]
+#version = "2.6"
+
+[profile.release]
+debug = false
+opt-level = "s"
+lto = true
+#panic = "abort"
