@@ -36,9 +36,9 @@ const worker=await new Promise(r=>{
  * @param {Uint8Array} data
  * @param {number} sourceWidth
  * @param {number} sourceHeight
- * @param {number} targetWidth,
- * @param {number} targetHeight,
- * @param {boolean} hq,
+ * @param {number} targetWidth
+ * @param {number} targetHeight
+ * @param {boolean} hq
  * @return {Promise<Uint8Array>}
  */
 const resize=(data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq=true)=>new Promise(r=>{
