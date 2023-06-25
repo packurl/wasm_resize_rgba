@@ -1,6 +1,6 @@
 [package]
 name = "rgba_resize"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["programingjd"]
 edition = "2021"
 

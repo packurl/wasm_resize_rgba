@@ -3,11 +3,14 @@ await (await fetch(url)).arrayBuffer();
 const src=()=>`(async()=>{
   const mod=await WebAssembly.compileStreaming(await fetch('${url}',{cache:'force-cache'}));
   const wasm=(await WebAssembly.instantiate(mod,{wbg:{}})).exports;
-  const malloc=wasm.__wbindgen_malloc;const free=wasm.__wbindgen_free;
+  const malloc=wasm.__wbindgen_malloc;
+  const free=wasm.__wbindgen_free;
+  const pointer=wasm.__wbindgen_add_to_stack_pointer;
   const fn=({data,width,height,w,h,hq})=>{
+    const n1=data.length;
+    const p1=malloc(n1,1);
+    const r=pointer(-16);
     try{
-      const r=wasm.__wbindgen_add_to_stack_pointer(-16);
-      const n1=data.length;const p1=malloc(n1);
       new Uint8Array(wasm.memory.buffer).set(data,p1);
       wasm.resize(r,p1,n1,width,height,w,h,hq);
       const arr=new Int32Array(wasm.memory.buffer);
@@ -15,9 +18,7 @@ const src=()=>`(async()=>{
       const res=new Uint8Array(wasm.memory.buffer).subarray(p2,p2+n2).slice();
       free(p2,n2);
       return res;
-    }finally{
-      wasm.__wbindgen_add_to_stack_pointer(16);
-    }
+    }finally{pointer(16)}
   };
   onmessage=async msg=>postMessage(fn(msg.data));
   postMessage('ready');
