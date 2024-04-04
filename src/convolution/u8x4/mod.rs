@@ -7,6 +7,9 @@ use super::{Coefficients, Convolution};
 
 #[cfg(target_arch = "wasm32")]
 mod wasm32;
+#[cfg(not(target_arch = "wasm32"))]
+mod native;
+
 
 impl Convolution for U8x4 {
     fn horiz_convolution(
@@ -20,6 +23,10 @@ impl Convolution for U8x4 {
             #[cfg(target_arch = "wasm32")]
             CpuExtensions::Simd128 => {
                 wasm32::horiz_convolution(src_image, dst_image, offset, coeffs)
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            CpuExtensions::None => {
+                native::horiz_convolution(src_image, dst_image, offset, coeffs)
             }
         }
     }

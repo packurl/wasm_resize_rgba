@@ -10,6 +10,8 @@ use crate::{
 /// Look at source code to see all available variants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CpuExtensions {
+    #[cfg(not(target_arch = "wasm32"))]
+    None,
     #[cfg(target_arch = "wasm32")]
     /// SIMD extension of Wasm32 architecture
     Simd128,
@@ -20,6 +22,11 @@ impl CpuExtensions {
 }
 
 impl Default for CpuExtensions {
+    #[cfg(not(target_arch = "wasm32"))]
+    fn default() -> Self {
+        Self::None
+    }
+    #[cfg(target_arch = "wasm32")]
     fn default() -> Self {
         Self::Simd128
     }

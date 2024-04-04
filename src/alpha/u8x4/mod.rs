@@ -18,6 +18,8 @@ impl AlphaMulDiv for U8x4 {
         match cpu_extensions {
             #[cfg(target_arch = "wasm32")]
             CpuExtensions::Simd128 => unsafe { wasm32::multiply_alpha(src_image, dst_image) },
+            #[cfg(not(target_arch = "wasm32"))]
+            CpuExtensions::None => native::multiply_alpha(src_image, dst_image),
         }
     }
 
@@ -25,6 +27,8 @@ impl AlphaMulDiv for U8x4 {
         match cpu_extensions {
             #[cfg(target_arch = "wasm32")]
             CpuExtensions::Simd128 => unsafe { wasm32::multiply_alpha_inplace(image) },
+            #[cfg(not(target_arch = "wasm32"))]
+            CpuExtensions::None => native::multiply_alpha_inplace(image),
         }
     }
 
@@ -36,6 +40,8 @@ impl AlphaMulDiv for U8x4 {
         match cpu_extensions {
             #[cfg(target_arch = "wasm32")]
             CpuExtensions::Simd128 => unsafe { wasm32::divide_alpha(src_image, dst_image) },
+            #[cfg(not(target_arch = "wasm32"))]
+            CpuExtensions::None => native::divide_alpha(src_image, dst_image),
         }
     }
 
@@ -43,6 +49,8 @@ impl AlphaMulDiv for U8x4 {
         match cpu_extensions {
             #[cfg(target_arch = "wasm32")]
             CpuExtensions::Simd128 => unsafe { wasm32::divide_alpha_inplace(image) },
+            #[cfg(not(target_arch = "wasm32"))]
+            CpuExtensions::None => native::divide_alpha_inplace(image),
         }
     }
 }

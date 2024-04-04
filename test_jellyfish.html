@@ -35,6 +35,7 @@ const w=Math.round(data.width*r);
 const h=Math.round(data.height*r);
 console.log(`Resizing from ${data.width},${data.height} to ${w},${h} (ratio: ${r.toFixed(3)})`);
 const bytes=await resize(rgba,data.width,data.height,w,h);
+console.log('Resizing done');
 const data2=new ImageData(new Uint8ClampedArray(bytes),w,h,{colorSpace: 'srgb'});
 canvas.width=w;
 canvas.height=h;

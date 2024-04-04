@@ -1,6 +1,6 @@
 [package]
 name = "rgba_resize"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["programingjd"]
 edition = "2021"
 
@@ -12,8 +12,9 @@ version = "0.2"
 
 [dependencies.num-traits]
 version = "0.2"
-#[dependencies.fast_image_resize]
-#version = "2.6"
+
+[dev-dependencies.image]
+version = "0.25"
 
 [profile.release]
 debug = false

@@ -1,5 +1,11 @@
 const url=new URL('resize.wasm',import.meta.url);
-const imports={wbg:{}};
+const imports={
+  wbg:{
+    __wbg_log_23c49b2eaab74338:(p,n)=>{
+      console.log(new TextDecoder().decode(new Uint8Array(wasm.memory.buffer).subarray(p,p+n)));
+    }
+  }
+};
 const {instance: {exports: wasm}}=await WebAssembly.instantiateStreaming(await fetch(url,{cache: 'force-cache'}),imports);
 const malloc=wasm.__wbindgen_malloc;
 const free=wasm.__wbindgen_free;

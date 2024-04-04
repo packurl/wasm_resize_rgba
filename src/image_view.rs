@@ -51,6 +51,7 @@ where
         self.height
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub(crate) fn iter_4_rows<'s>(
         &'s self,
@@ -66,6 +67,7 @@ where
         })
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub(crate) fn iter_2_rows<'s>(
         &'s self,
@@ -88,6 +90,7 @@ where
         rows.iter().copied()
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub(crate) fn get_row(&self, y: usize) -> Option<&'a [P]> {
         self.rows.get(y).copied()
@@ -166,6 +169,7 @@ where
         self.rows.iter_mut()
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub(crate) fn iter_4_rows_mut<'s>(
         &'s mut self,
@@ -176,6 +180,7 @@ where
         })
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub(crate) fn get_row_mut<'s>(&'s mut self, y: usize) -> Option<&'s mut &'a mut [P]> {
         self.rows.get_mut(y)

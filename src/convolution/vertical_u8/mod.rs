@@ -17,5 +17,7 @@ pub(crate) fn vert_convolution_u8<T: PixelExt<Component = u8>>(
     match cpu_extensions {
         #[cfg(target_arch = "wasm32")]
         CpuExtensions::Simd128 => wasm32::vert_convolution(src_image, dst_image, offset, coeffs),
+        #[cfg(not(target_arch = "wasm32"))]
+        CpuExtensions::None => native::vert_convolution(src_image, dst_image, offset, coeffs),
     }
 }

@@ -144,6 +144,7 @@ where
     T: Sized + Copy + Clone + PartialEq + 'static,
     C: PixelComponent,
 {
+    #[cfg(target_arch = "wasm32")]
     #[inline(always)]
     pub const fn new(v: T) -> Self {
         Self(v, PhantomData)

@@ -4,6 +4,7 @@ use crate::pixels::PixelExt;
 use crate::CpuExtensions;
 use crate::{ImageView, ImageViewMut};
 
+#[cfg(target_arch = "wasm32")]
 #[macro_use]
 mod macros;
 
