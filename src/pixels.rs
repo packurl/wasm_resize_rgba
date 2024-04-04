@@ -184,7 +184,7 @@ macro_rules! pixel_struct {
 
 pixel_struct!(
     U8x4,
-    u32,
+    [u8; 4],
     u8,
     4,
     PixelType::U8x4,

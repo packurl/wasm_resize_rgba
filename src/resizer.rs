@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// SIMD extension of CPU.
-/// Specific variants depends from target architecture.
+/// Specific variants vary from target architecture.
 /// Look at source code to see all available variants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CpuExtensions {

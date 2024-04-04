@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-pub type FilterFn<'a> = &'a dyn Fn(f64) -> f64;
+pub type FilterFn = fn(f64) -> f64;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
@@ -25,10 +25,10 @@ impl Default for FilterType {
 
 /// Returns reference to filter function and value of `filter_support`.
 #[inline]
-pub fn get_filter_func(filter_type: FilterType) -> (FilterFn<'static>, f64) {
+pub fn get_filter_func(filter_type: FilterType) -> (FilterFn, f64) {
     match filter_type {
-        FilterType::Hamming => (&hamming_filter, 1.0),
-        FilterType::CatmullRom => (&catmul_filter, 2.0)
+        FilterType::Hamming => (hamming_filter, 1.0),
+        FilterType::CatmullRom => (catmul_filter, 2.0)
     }
 }
 

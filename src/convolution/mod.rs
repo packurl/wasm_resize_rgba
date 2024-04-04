@@ -57,7 +57,7 @@ pub fn precompute_coefficients(
     in0: f64, // Left border for cropping
     in1: f64, // Right border for cropping
     out_size: usize,
-    filter: &dyn Fn(f64) -> f64,
+    filter: fn(f64) -> f64,
     filter_support: f64,
 ) -> Coefficients {
     let scale = (in1 - in0) / out_size as f64;

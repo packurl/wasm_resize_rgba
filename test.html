@@ -29,7 +29,7 @@ const data=context.getImageData(0,0,canvas.width,canvas.height);
 // a.textContent='Download';
 // document.body.appendChild(a);
 const rgba=new Uint8Array(data.data);
-const {resize}=await import('./resize.mjs');
+const {resize}=await import('./resize_worker.mjs');
 const r=Math.min(1,1440/Math.min(data.width,data.height));
 const w=Math.round(data.width*r);
 const h=Math.round(data.height*r);
