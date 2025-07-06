@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 pub type FilterFn = fn(f64) -> f64;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum FilterType {
     /// Hamming filter has the same performance as `Bilinear` filter while
@@ -14,13 +14,8 @@ pub enum FilterType {
     /// Catmull-Rom bicubic filter calculate the output pixel value using
     /// cubic interpolation on all pixels that may contribute to the output
     /// value.
+    #[default]
     CatmullRom,
-}
-
-impl Default for FilterType {
-    fn default() -> Self {
-        FilterType::CatmullRom
-    }
 }
 
 /// Returns reference to filter function and value of `filter_support`.

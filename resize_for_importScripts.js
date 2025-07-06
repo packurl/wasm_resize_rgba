@@ -2,7 +2,7 @@ const resize=(async()=>{
   let wasm;
   const imports={
     wbg:{
-      __wbg_log_bf8111044df980a8:(p,n)=>{
+      __wbg_log_cb485ef4b8fcc41d:(p,n)=>{
         console.log(new TextDecoder().decode(new Uint8Array(wasm.memory.buffer).subarray(p,p+n)));
       },
       __wbindgen_init_externref_table:function(){

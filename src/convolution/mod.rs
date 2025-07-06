@@ -72,9 +72,9 @@ pub fn precompute_coefficients(
     // with multiplication by recip_filter_scale
     let recip_filter_scale = 1.0 / filter_scale;
 
-    let count_of_coeffs = window_size * out_size as usize;
+    let count_of_coeffs = window_size * out_size;
     let mut coeffs: Vec<f64> = Vec::with_capacity(count_of_coeffs);
-    let mut bounds: Vec<Bound> = Vec::with_capacity(out_size as usize);
+    let mut bounds: Vec<Bound> = Vec::with_capacity(out_size);
 
     for out_x in 0..out_size {
         // Find the point in the input image corresponding to the centre

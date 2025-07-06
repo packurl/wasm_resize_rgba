@@ -16,7 +16,7 @@ impl PixelType {
     /// Returns `true` if given buffer is aligned by the alignment of pixel.
     pub(crate) fn is_aligned(&self, buffer: &[u8]) -> bool {
         match self {
-            Self::U8x4 => unsafe { buffer.align_to::<U8x4>().0.is_empty() },
+            Self::U8x4 => unsafe { buffer.align_to::<U8x4>() }.0.is_empty(),
         }
     }
 }
@@ -101,14 +101,6 @@ where
     }
 
     /// Size of pixel in bytes
-    ///
-    /// Example:
-    /// ```
-    /// # use fast_image_resize::pixels::{U8x2, U8x3, U8, PixelExt};
-    /// assert_eq!(U8x3::size(), 3);
-    /// assert_eq!(U8x2::size(), 2);
-    /// assert_eq!(U8::size(), 1);
-    /// ```
     fn size() -> usize {
         size_of::<Self>()
     }

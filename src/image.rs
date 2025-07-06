@@ -62,7 +62,7 @@ impl Image {
     #[inline(always)]
     pub fn buffer_mut(&mut self) -> &mut [u8] {
         match &mut self.buffer {
-            BufferContainer::VecU8(ref mut v) => v.as_mut_slice(),
+            BufferContainer::VecU8(v) => v.as_mut_slice(),
         }
     }
 
