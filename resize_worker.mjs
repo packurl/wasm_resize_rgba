@@ -19,14 +19,17 @@ const worker=await new Promise(r=>{
  * @param {number} targetWidth
  * @param {number} targetHeight
  * @param {boolean} [hq=true]
+ * @param {boolean} [transfer=false]
  * @return {Promise<Uint8Array>}
  */
-const resize=(data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq=true)=>new Promise(r=>{
+const resize=(
+  data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq=true,transfer=false
+)=>new Promise(r=>{
   worker.onmessage=msg=>{
     worker.onmessage=null;
     r(msg.data);
   }
-  worker.postMessage({data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq});
+  worker.postMessage({data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq},transfer?[data.buffer]:undefined);
 });
 
 export {resize};

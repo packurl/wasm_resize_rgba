@@ -9,13 +9,16 @@ declare module 'resize_worker' {
    * @param {number} targetWidth
    * @param {number} targetHeight
    * @param {boolean} [hq=true]
+   * @param {boolean} [transfer=false]
    * @return {Promise<Uint8Array>}
    */
   export function resize(
     data: Uint8Array,
     sourceWidth: number, sourceHeight: number,
     targetWidth: number, targetHeight: number,
-    hq: boolean
+    hq: boolean,
+    transfer: boolean
   ): Promise<Uint8Array>;
+
   export default resize;
 }

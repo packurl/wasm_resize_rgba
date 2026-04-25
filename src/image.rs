@@ -6,7 +6,6 @@ enum BufferContainer {
     VecU8(Vec<u8>),
 }
 
-
 /// Simple container of image data.
 #[derive(Debug)]
 pub struct Image {
@@ -48,6 +47,12 @@ impl Image {
             buffer: BufferContainer::VecU8(buffer),
             pixel_type,
         })
+    }
+
+    pub fn into_buffer(self) -> Vec<u8> {
+        match self.buffer {
+            BufferContainer::VecU8(v) => v,
+        }
     }
 
     /// Buffer with image pixels.

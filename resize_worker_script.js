@@ -1,8 +1,9 @@
 importScripts('./resize_for_importScripts.js');
 (async()=>{
   const fn=await resize;
-  onmessage=async msg=>{
-    postMessage(fn(msg.data.data,msg.data.sourceWidth,msg.data.sourceHeight,msg.data.targetWidth,msg.data.targetHeight,msg.data.hq));
+  onmessage=async({data:{data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq}})=>{
+    const r=fn(data,sourceWidth,sourceHeight,targetWidth,targetHeight,hq);
+    postMessage(r,[r.buffer]);
   }
   postMessage('ready');
 })();

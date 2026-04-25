@@ -1,9 +1,9 @@
 [package]
 name = "wasm_resize_rgba"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 authors = ["Jerome David <programingjd@gmail.com>"]
-categories = ["wasm","multimedia::images"]
+categories = ["wasm", "multimedia::images"]
 description = "esm modules for image resizing using the CatmullRom (hq) or Hamming methods, with sync and async (worker) versions"
 keywords = ["wasm", "image", "resize", "CatmullRom", "Hamming"]
 license = "MIT"
@@ -16,20 +16,9 @@ include = [
 ]
 
 [lib]
-crate-type = ["cdylib","rlib"]
-
-[dependencies.wasm-bindgen]
-version = "0.2"
-
-[dependencies.num-traits]
-version = "0.2"
-
-[dev-dependencies.image]
-version = "0.25"
+crate-type = ["cdylib", "rlib"]
 
 [profile.release]
-debug = false
 opt-level = "s"
 lto = true
 codegen-units = 1
-#panic = "abort"
