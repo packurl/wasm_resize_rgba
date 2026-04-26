@@ -29,7 +29,7 @@ pub(crate) fn horiz_convolution(
             }
 
             for (i, s) in ss.iter().copied().enumerate() {
-                dst_pixel.0[i] = unsafe { normalizer.clip(s) };
+                dst_pixel.0[i] = normalizer.clip(s);
             }
         }
     }

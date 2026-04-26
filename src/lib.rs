@@ -7,7 +7,6 @@ use resizer::{CpuExtensions, ResizeAlg, Resizer};
 
 use crate::image::Image;
 
-mod alpha;
 mod convolution;
 mod dynamic_image_view;
 mod errors;
@@ -18,9 +17,17 @@ mod resizer;
 #[cfg(target_arch = "wasm32")]
 mod wasm32_utils;
 
+#[cfg(target_arch = "wasm32")]
 #[link(wasm_import_module = "js")]
 unsafe extern "C" {
     fn println(ptr: usize, len: usize);
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+unsafe fn println(ptr: usize, len: usize) {
+    let slice = unsafe { std::slice::from_raw_parts(ptr as *const u8, len) };
+    let s = std::str::from_utf8(slice).unwrap_or("<invalid utf8>");
+    println!("{}", s);
 }
 
 #[inline(always)]
@@ -60,7 +67,8 @@ pub unsafe fn resize(
     let mut ptr_and_len = Vec::with_capacity(8);
     ptr_and_len.extend_from_slice(&ptr.to_le_bytes());
     ptr_and_len.extend_from_slice(&len.to_le_bytes());
-    unsafe { Box::from_raw(Box::into_raw(ptr_and_len.into_boxed_slice()) as *mut [u8; 8]) }
+    let ptr_raw = Box::into_raw(ptr_and_len.into_boxed_slice()) as *mut [u8; 8];
+    unsafe { Box::from_raw(ptr_raw) }
 }
 
 #[unsafe(no_mangle)]
@@ -75,7 +83,5 @@ pub fn malloc(len: usize) -> *mut u8 {
 /// We assume the pointer points to an array of the correct `len`.
 #[unsafe(no_mangle)]
 pub unsafe fn free(ptr: *mut u8, len: usize) {
-    unsafe {
-        Vec::from_raw_parts(ptr, 0, len);
-    }
+    unsafe { Vec::from_raw_parts(ptr, 0, len) };
 }

@@ -1,5 +1,5 @@
 use std::arch::wasm32::*;
-use std::intrinsics::transmute;
+use std::mem::transmute;
 
 use crate::convolution::{optimisations, Coefficients};
 use crate::pixels::U8x4;
@@ -24,21 +24,17 @@ pub(crate) fn horiz_convolution(
     let src_iter = src_image.iter_4_rows(offset, dst_height as u32 + offset);
     let dst_iter = dst_image.iter_4_rows_mut();
     for (src_rows, dst_rows) in src_iter.zip(dst_iter) {
-        unsafe {
-            horiz_convolution_8u4x(src_rows, dst_rows, &coefficients_chunks, precision);
-        }
+        horiz_convolution_8u4x(src_rows, dst_rows, &coefficients_chunks, precision);
     }
 
     let mut yy = dst_height - dst_height % 4;
     while yy < dst_height {
-        unsafe {
-            horiz_convolution_8u(
-                src_image.get_row(yy + offset as usize).unwrap(),
-                dst_image.get_row_mut(yy).unwrap(),
-                &coefficients_chunks,
-                precision,
-            );
-        }
+        horiz_convolution_8u(
+            src_image.get_row(yy + offset as usize).unwrap(),
+            dst_image.get_row_mut(yy).unwrap(),
+            &coefficients_chunks,
+            precision,
+        );
         yy += 1;
     }
 }
@@ -50,7 +46,7 @@ pub(crate) fn horiz_convolution(
 /// - max(chunk.start + chunk.values.len() for chunk in coefficients_chunks) <= src_row.0.len()
 /// - precision <= MAX_COEFS_PRECISION
 #[target_feature(enable = "simd128")]
-unsafe fn horiz_convolution_8u4x(
+fn horiz_convolution_8u4x(
     src_rows: [&[U8x4]; 4],
     dst_rows: [&mut &mut [U8x4]; 4],
     coefficients_chunks: &[optimisations::CoefficientsI16Chunk],
@@ -165,14 +161,17 @@ unsafe fn horiz_convolution_8u4x(
         sss1 = i16x8_narrow_i32x4(sss1, sss1);
         sss2 = i16x8_narrow_i32x4(sss2, sss2);
         sss3 = i16x8_narrow_i32x4(sss3, sss3);
-        *dst_rows[0].get_unchecked_mut(dst_x) =
-            transmute(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss0, sss0)));
-        *dst_rows[1].get_unchecked_mut(dst_x) =
-            transmute(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss1, sss1)));
-        *dst_rows[2].get_unchecked_mut(dst_x) =
-            transmute(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss2, sss2)));
-        *dst_rows[3].get_unchecked_mut(dst_x) =
-            transmute(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss3, sss3)));
+
+        unsafe {
+            *dst_rows[0].get_unchecked_mut(dst_x) =
+                transmute::<i32, U8x4>(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss0, sss0)));
+            *dst_rows[1].get_unchecked_mut(dst_x) =
+                transmute::<i32, U8x4>(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss1, sss1)));
+            *dst_rows[2].get_unchecked_mut(dst_x) =
+                transmute::<i32, U8x4>(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss2, sss2)));
+            *dst_rows[3].get_unchecked_mut(dst_x) =
+                transmute::<i32, U8x4>(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss3, sss3)));
+        }
     }
 }
 
@@ -182,7 +181,7 @@ unsafe fn horiz_convolution_8u4x(
 /// - max(chunk.start + chunk.values.len() for chunk in coefficients_chunks) <= src_row.len()
 /// - precision <= MAX_COEFS_PRECISION
 #[target_feature(enable = "simd128")]
-unsafe fn horiz_convolution_8u(
+fn horiz_convolution_8u(
     src_row: &[U8x4],
     dst_row: &mut [U8x4],
     coefficients_chunks: &[optimisations::CoefficientsI16Chunk],
@@ -276,7 +275,9 @@ unsafe fn horiz_convolution_8u(
         constify_imm8!(precision, call);
 
         sss = i16x8_narrow_i32x4(sss, sss);
-        *dst_row.get_unchecked_mut(dst_x) =
-            transmute(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss, sss)));
+        unsafe {
+            *dst_row.get_unchecked_mut(dst_x) =
+                transmute::<i32, U8x4>(i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss, sss)));
+        }
     }
 }

@@ -6,6 +6,3 @@ pub enum ImageBufferError {
 
 #[derive(Debug, Clone, Copy)]
 pub struct DifferentTypesOfPixelsError;
-
-#[derive(Debug, Clone, Copy)]
-pub struct DifferentDimensionsError;

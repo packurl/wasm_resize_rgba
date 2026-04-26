@@ -19,15 +19,13 @@ pub(crate) fn vert_convolution<T: PixelExt<Component = u8>>(
 
     let dst_rows = dst_image.iter_rows_mut();
     for (dst_row, coeffs_chunk) in dst_rows.zip(coefficients_chunks) {
-        unsafe {
-            vert_convolution_into_one_row_u8(src_image, dst_row, src_x, coeffs_chunk, &normalizer);
-        }
+        vert_convolution_into_one_row_u8(src_image, dst_row, src_x, coeffs_chunk, &normalizer);
     }
 }
 
 #[inline]
 #[target_feature(enable = "simd128")]
-unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
+fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
     src_img: &ImageView<T>,
     dst_row: &mut [T],
     mut src_x: usize,
@@ -163,12 +161,12 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
         sss2 = i16x8_narrow_i32x4(sss2, sss3);
         sss0 = u8x16_narrow_i16x8(sss0, sss2);
         let dst_ptr = dst_chunk.as_mut_ptr() as *mut v128;
-        v128_store(dst_ptr, sss0);
+        unsafe { v128_store(dst_ptr, sss0) };
         sss4 = i16x8_narrow_i32x4(sss4, sss5);
         sss6 = i16x8_narrow_i32x4(sss6, sss7);
         sss4 = u8x16_narrow_i16x8(sss4, sss6);
-        let dst_ptr = dst_ptr.add(1);
-        v128_store(dst_ptr, sss4);
+        let dst_ptr = unsafe { dst_ptr.add(1) };
+        unsafe { v128_store(dst_ptr, sss4) };
 
         src_x += 32;
     }
@@ -227,7 +225,7 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
         sss0 = i16x8_narrow_i32x4(sss0, sss1);
         sss0 = u8x16_narrow_i16x8(sss0, sss0);
         let dst_ptr = dst_chunk.as_mut_ptr() as *mut [i64; 2];
-        (*dst_ptr)[0] = i64x2_extract_lane::<0>(sss0);
+        unsafe { (*dst_ptr)[0] = i64x2_extract_lane::<0>(sss0) };
 
         src_x += 8;
     }
@@ -273,7 +271,7 @@ unsafe fn vert_convolution_into_one_row_u8<T: PixelExt<Component = u8>>(
 
         sss = i16x8_narrow_i32x4(sss, sss);
         let dst_ptr = dst_chunk.as_mut_ptr() as *mut i32;
-        *dst_ptr = i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss, sss));
+        unsafe { *dst_ptr = i32x4_extract_lane::<0>(u8x16_narrow_i16x8(sss, sss)) };
 
         src_x += 4;
     }

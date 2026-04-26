@@ -72,7 +72,7 @@ impl Image {
     }
 
     #[inline(always)]
-    pub fn view(&self) -> DynamicImageView {
+    pub fn view(&self) -> DynamicImageView<'_> {
         macro_rules! get_dynamic_image {
             ($img_type: expr) => {
                 ($img_type(ImageView::from_buffer(self.width, self.height, self.buffer()).unwrap()))
@@ -85,7 +85,7 @@ impl Image {
     }
 
     #[inline(always)]
-    pub fn view_mut(&mut self) -> DynamicImageViewMut {
+    pub fn view_mut(&mut self) -> DynamicImageViewMut<'_> {
         macro_rules! get_dynamic_image {
             ($img_type: expr) => {
                 ($img_type(
@@ -123,7 +123,7 @@ where
     }
 
     #[inline(always)]
-    pub fn dst_view(&mut self) -> ImageViewMut<P> {
+    pub fn dst_view(&mut self) -> ImageViewMut<'_, P> {
         ImageViewMut::from_pixels(self.width, self.height, self.pixels).unwrap()
     }
 }

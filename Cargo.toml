@@ -18,6 +18,10 @@ include = [
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+default = ["simd128"]
+simd128 = []
+
 [profile.release]
 opt-level = "s"
 lto = true

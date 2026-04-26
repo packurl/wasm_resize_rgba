@@ -47,12 +47,6 @@ pub struct Coefficients {
     pub bounds: Vec<Bound>,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct CoefficientsChunk<'a> {
-    pub start: u32,
-    pub values: &'a [f64],
-}
-
 pub fn precompute_coefficients(
     in_size: usize,
     in0: f64, // Left border for cropping

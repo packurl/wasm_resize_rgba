@@ -79,7 +79,7 @@ impl Normalizer16 {
     }
 
     #[inline]
-    pub fn normalized_chunks(&self) -> Vec<CoefficientsI16Chunk> {
+    pub fn normalized_chunks(&self) -> Vec<CoefficientsI16Chunk<'_>> {
         let mut cooefs = self.values.as_slice();
         let mut res = Vec::with_capacity(self.bounds.len());
         for bound in self.bounds.iter() {
@@ -104,12 +104,10 @@ impl Normalizer16 {
     /// such that the expression `v >> self.precision`
     /// produces a result in the range `[-512, 511]`.
     #[inline(always)]
-    pub unsafe fn clip(&self, v: i32) -> u8 {
+    pub fn clip(&self, v: i32) -> u8 {
         let index = (640 + (v >> self.precision)) as usize;
         // index must be in range [(640-512)..(640+511)]
         debug_assert!((128..=1151).contains(&index));
         unsafe { *CLIP8_LOOKUPS.get_unchecked(index) }
     }
 }
-
-

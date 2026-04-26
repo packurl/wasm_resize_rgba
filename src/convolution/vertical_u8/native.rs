@@ -108,8 +108,8 @@ fn convolution_by_chunks<T, const CHUNK_SIZE: usize>(
     first_y_src: u32,
     ks: &[i16],
 ) -> usize
-    where
-        T: PixelExt<Component = u8>,
+where
+    T: PixelExt<Component = u8>,
 {
     for dst_chunk in dst_chunks {
         let mut ss = [initial; CHUNK_SIZE];
@@ -133,7 +133,7 @@ fn convolution_by_chunks<T, const CHUNK_SIZE: usize>(
         );
 
         for (i, s) in ss.iter().copied().enumerate() {
-            dst_chunk[i] = unsafe { normalizer.clip(s) };
+            dst_chunk[i] = normalizer.clip(s);
         }
         x_src += CHUNK_SIZE;
     }
@@ -169,8 +169,8 @@ pub(crate) fn convolution_by_u8<T>(
     first_y_src: u32,
     ks: &[i16],
 ) -> usize
-    where
-        T: PixelExt<Component = u8>,
+where
+    T: PixelExt<Component = u8>,
 {
     for dst_component in dst_components {
         let mut ss = initial;
@@ -180,7 +180,7 @@ pub(crate) fn convolution_by_u8<T>(
             let src_component = unsafe { *src_ptr.add(x_src) };
             ss += src_component as i32 * (k as i32);
         }
-        *dst_component = unsafe { normalizer.clip(ss) };
+        *dst_component = normalizer.clip(ss);
         x_src += 1
     }
     x_src

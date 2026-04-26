@@ -20,7 +20,6 @@ impl<'a, P> ImageView<'a, P>
 where
     P: PixelExt,
 {
-
     pub fn from_buffer(
         width: usize,
         height: usize,
@@ -32,10 +31,7 @@ where
         }
         let rows_count = height;
         let pixels = align_buffer_to(buffer)?;
-        let rows = pixels
-            .chunks_exact(width)
-            .take(rows_count)
-            .collect();
+        let rows = pixels.chunks_exact(width).take(rows_count).collect();
         Ok(Self {
             width,
             height,
@@ -112,7 +108,6 @@ impl<'a, P> ImageViewMut<'a, P>
 where
     P: PixelExt,
 {
-
     pub fn from_buffer(
         width: usize,
         height: usize,
@@ -124,10 +119,7 @@ where
         }
         let rows_count = height;
         let pixels = align_buffer_to_mut(buffer)?;
-        let rows = pixels
-            .chunks_exact_mut(width)
-            .take(rows_count)
-            .collect();
+        let rows = pixels.chunks_exact_mut(width).take(rows_count).collect();
         Ok(Self {
             width,
             height,
@@ -145,10 +137,7 @@ where
             return Err(ImageBufferError::InvalidBufferSize);
         }
         let rows_count = height;
-        let rows = pixels
-            .chunks_exact_mut(width)
-            .take(rows_count)
-            .collect();
+        let rows = pixels.chunks_exact_mut(width).take(rows_count).collect();
         Ok(Self {
             width,
             height,
@@ -165,7 +154,7 @@ where
     }
 
     #[inline(always)]
-    pub(crate) fn iter_rows_mut(&mut self) -> slice::IterMut<&'a mut [P]> {
+    pub(crate) fn iter_rows_mut(&mut self) -> slice::IterMut<'_, &'a mut [P]> {
         self.rows.iter_mut()
     }
 
@@ -185,7 +174,6 @@ where
     pub(crate) fn get_row_mut<'s>(&'s mut self, y: usize) -> Option<&'s mut &'a mut [P]> {
         self.rows.get_mut(y)
     }
-
 }
 
 impl<'a, P> From<ImageViewMut<'a, P>> for ImageView<'a, P>
@@ -222,4 +210,3 @@ fn align_buffer_to_mut<T>(buffer: &mut [u8]) -> Result<&mut [T], ImageBufferErro
     }
     Ok(pixels)
 }
-

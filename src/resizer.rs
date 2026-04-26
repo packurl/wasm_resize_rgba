@@ -17,9 +17,7 @@ pub enum CpuExtensions {
     Simd128,
 }
 
-impl CpuExtensions {
-
-}
+impl CpuExtensions {}
 
 impl Default for CpuExtensions {
     #[cfg(not(target_arch = "wasm32"))]
@@ -49,7 +47,7 @@ impl Default for ResizeAlg {
 pub struct Resizer {
     pub algorithm: ResizeAlg,
     cpu_extensions: CpuExtensions,
-    convolution_buffer: Vec<u8>
+    convolution_buffer: Vec<u8>,
 }
 
 impl Resizer {
@@ -108,7 +106,7 @@ fn get_temp_image_from_buffer<P: PixelExt>(
     buffer: &mut Vec<u8>,
     width: usize,
     height: usize,
-) -> InnerImage<P> {
+) -> InnerImage<'_, P> {
     let pixels_count = width * height;
     // Add pixel size as gap for alignment of resulted buffer.
     let buf_size = pixels_count * P::size() + P::size();
@@ -165,7 +163,8 @@ fn resample_convolution<P>(
             let last_y_bound = vert_coeffs.bounds.last().unwrap();
             let y_last = last_y_bound.start + last_y_bound.size;
             let temp_height = y_last - y_first;
-            let mut temp_image = get_temp_image_from_buffer(temp_buffer, dst_width, temp_height as usize);
+            let mut temp_image =
+                get_temp_image_from_buffer(temp_buffer, dst_width, temp_height as usize);
             let mut tmp_dst_view = temp_image.dst_view();
             P::horiz_convolution(
                 src_image,
@@ -189,22 +188,10 @@ fn resample_convolution<P>(
             );
         }
         (Some(horiz_coeffs), None) => {
-            P::horiz_convolution(
-                src_image,
-                dst_image,
-                0,
-                horiz_coeffs,
-                cpu_extensions,
-            );
+            P::horiz_convolution(src_image, dst_image, 0, horiz_coeffs, cpu_extensions);
         }
         (None, Some(vert_coeffs)) => {
-            P::vert_convolution(
-                src_image,
-                dst_image,
-                0,
-                vert_coeffs,
-                cpu_extensions,
-            );
+            P::vert_convolution(src_image, dst_image, 0, vert_coeffs, cpu_extensions);
         }
         _ => {}
     }

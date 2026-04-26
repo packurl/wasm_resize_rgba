@@ -7,11 +7,13 @@ use std::slice;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum PixelType {
-    U8x4
+    U8x4,
 }
 
 impl PixelType {
-    pub(crate) fn size(&self) -> usize { 4 }
+    pub(crate) fn size(&self) -> usize {
+        4
+    }
 
     /// Returns `true` if given buffer is aligned by the alignment of pixel.
     pub(crate) fn is_aligned(&self, buffer: &[u8]) -> bool {
@@ -35,18 +37,8 @@ impl<const N: usize> GetCount for Count<N> {
     }
 }
 
-pub trait GetCountOfValues {
-    fn count_of_values() -> usize;
-}
-
 /// Generic type to represent the number of available values for a single pixel component.
 pub struct Values<const N: usize>;
-
-impl<const N: usize> GetCountOfValues for Values<N> {
-    fn count_of_values() -> usize {
-        N
-    }
-}
 
 /// Information about one component of pixel.
 pub trait PixelComponent
@@ -55,12 +47,7 @@ where
 {
     /// Type that provides information about a count of
     /// available values of one pixel's component
-    type CountOfComponentValues: GetCountOfValues;
-
-    /// Count of available values of one pixel's component
-    fn count_of_values() -> usize {
-        Self::CountOfComponentValues::count_of_values()
-    }
+    type CountOfComponentValues;
 }
 
 impl PixelComponent for u8 {
@@ -76,14 +63,10 @@ impl PixelComponent for f32 {
     type CountOfComponentValues = Values<0>;
 }
 
-pub trait IntoPixelType {
-    fn pixel_type() -> PixelType;
-}
-
 /// Additional information about pixel type.
 pub trait PixelExt
 where
-    Self: Copy + Clone + Sized + Debug + PartialEq + IntoPixelType,
+    Self: Copy + Clone + Sized + Debug + PartialEq,
 {
     /// Type of pixel components
     type Component: PixelComponent;
@@ -95,16 +78,12 @@ where
         Self::CountOfComponents::count()
     }
 
-    /// Count of available values of one pixel's component
-    fn count_of_component_values() -> usize {
-        Self::Component::count_of_values()
-    }
-
     /// Size of pixel in bytes
     fn size() -> usize {
         size_of::<Self>()
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// Create slice of pixel's components from slice of pixels
     fn components(buf: &[Self]) -> &[Self::Component] {
         let size = buf.len() * Self::count_of_components();
@@ -131,21 +110,9 @@ where
     T: Sized + Copy + Clone + PartialEq + 'static,
     C: PixelComponent;
 
-impl<T, C, const COUNT_OF_COMPONENTS: usize> Pixel<T, C, COUNT_OF_COMPONENTS>
-where
-    T: Sized + Copy + Clone + PartialEq + 'static,
-    C: PixelComponent,
-{
-    #[cfg(target_arch = "wasm32")]
-    #[inline(always)]
-    pub const fn new(v: T) -> Self {
-        Self(v, PhantomData)
-    }
-}
-
 impl<T, C, const COUNT_OF_COMPONENTS: usize> PixelExt for Pixel<T, C, COUNT_OF_COMPONENTS>
 where
-    Self: IntoPixelType + Debug,
+    Self: Debug,
     T: Sized + Copy + Clone + PartialEq + 'static,
     C: PixelComponent,
 {
@@ -157,12 +124,6 @@ macro_rules! pixel_struct {
     ($name:ident, $type:tt, $comp_type:tt, $comp_count:literal, $pixel_type:expr, $doc:expr) => {
         #[doc = $doc]
         pub type $name = Pixel<$type, $comp_type, $comp_count>;
-
-        impl IntoPixelType for $name {
-            fn pixel_type() -> PixelType {
-                $pixel_type
-            }
-        }
 
         impl Debug for $name {
             fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -183,16 +144,3 @@ pixel_struct!(
     PixelType::U8x4,
     "Four bytes per pixel (RGBA8, RGBx8, CMYK8 and other)"
 );
-
-pub trait IntoPixelComponent<Out: PixelComponent>
-where
-    Self: PixelComponent,
-{
-    fn into_component(self) -> Out;
-}
-
-impl<C: PixelComponent> IntoPixelComponent<C> for C {
-    fn into_component(self) -> C {
-        self
-    }
-}
